@@ -5,24 +5,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Raven.Message.Kafka.Configuration
+namespace Raven.Message.Kafka.Abstract.Configuration
 {
     /// <summary>
     /// 主题配置
     /// </summary>
-    public class TopicConfig
+    public interface ITopicConfig
     {
         /// <summary>
         /// 主题名
         /// </summary>
-        public string Name { get; set; }
+        string Name { get; }
         /// <summary>
-        /// 序列化类型，可覆盖<see cref="ClientConfig.SerializerType"/>
+        /// 序列化类型，可覆盖<see cref="IClientConfig.SerializerType"/>
         /// </summary>
-        public SerializerType? SerializerType { get; set; }
+        SerializerType? SerializerType { get; }
         /// <summary>
         /// 生产者配置
         /// </summary>
-        public ProducerConfig ProducerConfig { get; set; }
+        IProducerConfig ProducerConfig { get; }
     }
 }

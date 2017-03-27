@@ -10,6 +10,12 @@ namespace Raven.Message.Kafka.Serialization
     internal class ConfluentKafkaSerializer<T> : Confluent.Kafka.Serialization.ISerializer<T>
     {
         IDataSerializer _dataSerializer;
+
+        public ConfluentKafkaSerializer()
+        {
+            _dataSerializer = SerializerContainer.GetSerializer();
+        }
+
         public ConfluentKafkaSerializer(SerializerType serializerType)
         {
             _dataSerializer = SerializerContainer.GetSerializer(serializerType);

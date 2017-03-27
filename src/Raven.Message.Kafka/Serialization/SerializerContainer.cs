@@ -13,6 +13,12 @@ namespace Raven.Message.Kafka.Serialization
     internal class SerializerContainer
     {
         static List<Tuple<SerializerType, IDataSerializer>> Serizlizers = new List<Tuple<SerializerType, IDataSerializer>>(8);
+        internal static SerializerType DefaultSerializerType { get; set; }
+
+        public static IDataSerializer GetSerializer()
+        {
+            return GetSerializer(DefaultSerializerType);
+        }
 
         public static IDataSerializer GetSerializer(SerializerType serializerType)
         {

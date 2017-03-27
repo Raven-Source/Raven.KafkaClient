@@ -1,11 +1,11 @@
-﻿using Raven.Message.Kafka.Configuration;
+﻿using Raven.Message.Kafka.Abstract.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Raven.Message.Kafka.Abstract
+namespace Raven.Message.Kafka.Abstract.Configuration
 {
     /// <summary>
     /// 配置工厂
@@ -16,6 +16,6 @@ namespace Raven.Message.Kafka.Abstract
         /// 创建配置
         /// </summary>
         /// <returns></returns>
-        ClientConfig CreateConfig();
+        IClientConfig CreateConfig();
     }
 }

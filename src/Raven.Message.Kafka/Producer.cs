@@ -1,4 +1,4 @@
-﻿using Raven.Message.Kafka.Configuration;
+﻿using Raven.Message.Kafka.Abstract.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +12,15 @@ namespace Raven.Message.Kafka
     /// </summary>
     public class Producer : IDisposable
     {
-        internal BrokerConfig BrokerConfig { get; set; }
-        internal Producer(BrokerConfig brokerConfig)
+        ConfluentKafkaProducerContainer _producerManager;
+        bool _disposeCalled = false;//是否已开始关闭
+
+        internal IBrokerConfig BrokerConfig { get; set; }
+        internal Producer(IBrokerConfig brokerConfig)
         {
             BrokerConfig = brokerConfig;
+            _producerManager = new ConfluentKafkaProducerContainer(this);
         }
-
-        ConfluentKafkaProducerContainer _producerManager = new ConfluentKafkaProducerContainer();
-
         /// <summary>
         /// 生产消息
         /// </summary>
@@ -31,6 +32,8 @@ namespace Raven.Message.Kafka
         {
             try
             {
+                if (_disposeCalled)
+                    throw new InvalidOperationException("producer is disposed");
                 var topicConfig = BrokerConfig?.Topics?.FirstOrDefault(t => t.Name == topic);
                 var producer = _producerManager.GetProducer<T>(topic, topicConfig);
                 return producer.ProduceAsync(topic, null, message);
@@ -46,6 +49,7 @@ namespace Raven.Message.Kafka
         {
             try
             {
+                _disposeCalled = true;
                 LogHelpler.Info("producer disponsing");
                 _producerManager.ReleaseAllProducers();
                 LogHelpler.Info("producer disposed");

@@ -51,15 +51,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Abstract\IConfigFactory.cs" />
+    <Compile Include="Abstract\Configuration\IConfigFactory.cs" />
     <Compile Include="Abstract\ILog.cs" />
     <Compile Include="Client.cs" />
-    <Compile Include="Configuration\Factory\AppConfigFactory.cs" />
-    <Compile Include="Configuration\BrokerConfig.cs" />
-    <Compile Include="Configuration\ClientConfig.cs" />
-    <Compile Include="Configuration\ProducerConfig.cs" />
-    <Compile Include="Configuration\TopicConfig.cs" />
+    <Compile Include="Abstract\Configuration\IBrokerConfig.cs" />
+    <Compile Include="Abstract\Configuration\IClientConfig.cs" />
+    <Compile Include="Abstract\Configuration\IProducerConfig.cs" />
+    <Compile Include="Abstract\Configuration\ITopicConfig.cs" />
     <Compile Include="ConfluentKafkaProducerContainer.cs" />
+    <Compile Include="Impl\Configuration\App\BrokerConfig.cs" />
+    <Compile Include="Impl\Configuration\App\ClientConfig.cs" />
+    <Compile Include="Impl\Configuration\App\ConfigFactory.cs" />
+    <Compile Include="Impl\Configuration\App\ProducerConfig.cs" />
+    <Compile Include="Impl\Configuration\App\TopicConfig.cs" />
     <Compile Include="LogHelpler.cs" />
     <Compile Include="Producer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

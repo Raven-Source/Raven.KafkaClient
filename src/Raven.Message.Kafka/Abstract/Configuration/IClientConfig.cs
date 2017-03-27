@@ -5,29 +5,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Raven.Message.Kafka.Configuration
+namespace Raven.Message.Kafka.Abstract.Configuration
 {
     /// <summary>
     /// 客户端配置
     /// </summary>
-    public class ClientConfig
+    public interface IClientConfig
     {
         /// <summary>
         /// 日志实现类
         /// </summary>
-        public string LogType { get; set; }
+        string LogType { get; }
         /// <summary>
         /// 序列化类型
         /// </summary>
-        public SerializerType SerializerType { get; set; }
+        SerializerType SerializerType { get; }
         /// <summary>
         /// 服务器配置
         /// </summary>
-        public IEnumerable<BrokerConfig> Brokers { get; set; }
-
-        public override string ToString()
-        {
-            return $"LogType:{LogType},SerializerType:{SerializerType}";
-        }
+        IEnumerable<IBrokerConfig> Brokers { get; }
     }
 }

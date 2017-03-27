@@ -1,5 +1,5 @@
 ﻿using Raven.Message.Kafka.Abstract;
-using Raven.Message.Kafka.Configuration;
+using Raven.Message.Kafka.Abstract.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,13 +19,13 @@ namespace Raven.Message.Kafka
         /// <summary>
         /// 获取客户端配置
         /// </summary>
-        public static ClientConfig Config { get; private set; }
+        public static IClientConfig Config { get; private set; }
         /// <summary>
-        /// 初始化，配置工厂默认使用<see cref="AppConfigFactory"/>
+        /// 初始化，配置工厂默认使用<see cref="Impl.Configuration.App.ConfigFactory"/>
         /// </summary>
         public static void Init()
         {
-            AppConfigFactory factory = new AppConfigFactory();
+            Impl.Configuration.App.ConfigFactory factory = new Impl.Configuration.App.ConfigFactory();
             Init(factory);
         }
         /// <summary>
@@ -36,14 +36,14 @@ namespace Raven.Message.Kafka
         {
             if (configFactory == null)
                 throw new ArgumentNullException(nameof(configFactory));
-            ClientConfig clientConfig = configFactory.CreateConfig();
+            IClientConfig clientConfig = configFactory.CreateConfig();
             Init(clientConfig);
         }
         /// <summary>
         /// 初始化
         /// </summary>
         /// <param name="config">客户端配置</param>
-        public static void Init(ClientConfig config)
+        public static void Init(IClientConfig config)
         {
             if (_inited)
                 return;
@@ -57,7 +57,8 @@ namespace Raven.Message.Kafka
                 try
                 {
                     InitLog(config);
-                    LogHelpler.Info("init config {0}", config);
+                    LogHelpler.Info("init config");
+                    InitSerializer(config);
                     InitClient(config);
                     _inited = true;
                 }
@@ -99,7 +100,7 @@ namespace Raven.Message.Kafka
         /// 初始化日志
         /// </summary>
         /// <param name="config"></param>
-        static void InitLog(ClientConfig config)
+        static void InitLog(IClientConfig config)
         {
             if (string.IsNullOrEmpty(config.LogType))
                 return;
@@ -111,10 +112,18 @@ namespace Raven.Message.Kafka
             LogHelpler.SetLog(log);
         }
         /// <summary>
+        /// 初始化序列化参数
+        /// </summary>
+        /// <param name="config"></param>
+        static void InitSerializer(IClientConfig config)
+        {
+            Serialization.SerializerContainer.DefaultSerializerType = config.SerializerType;
+        }
+        /// <summary>
         /// 初始化客户端实例
         /// </summary>
         /// <param name="config"></param>
-        static void InitClient(ClientConfig config)
+        static void InitClient(IClientConfig config)
         {
             if (config.Brokers == null)
                 throw new ArgumentNullException(nameof(config.Brokers));
@@ -140,7 +149,7 @@ namespace Raven.Message.Kafka
         /// <summary>
         /// 服务器配置
         /// </summary>
-        public BrokerConfig BrokerConfig { get; private set; }
+        public IBrokerConfig BrokerConfig { get; private set; }
         /// <summary>
         /// 获取生产者实例
         /// </summary>
@@ -153,11 +162,11 @@ namespace Raven.Message.Kafka
             Producer.Dispose();
         }
 
-        Client(BrokerConfig brokerConfig)
+        Client(IBrokerConfig brokerConfig)
         {
             if (brokerConfig == null)
                 throw new ArgumentNullException(nameof(brokerConfig));
-            LogHelpler.Info("create client for broker config {0}", brokerConfig);
+            LogHelpler.Info("create client for broker {0}, {1}", brokerConfig.Name, brokerConfig.Uri);
             BrokerConfig = brokerConfig;
             Producer = new Producer(brokerConfig);
         }
