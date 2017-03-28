@@ -106,8 +106,8 @@ namespace Raven.Message.Kafka
                 return;
             Type logType = Type.GetType(config.LogType);
             Type iLogType = typeof(ILog);
-            if (!logType.IsAssignableFrom(iLogType))
-                throw new ArgumentException($"{logType} is not assignable from {iLogType}");
+            if (!iLogType.IsAssignableFrom(logType))
+                throw new ArgumentException($"{logType} is not assignable to {iLogType}");
             ILog log = Activator.CreateInstance(logType) as ILog;
             LogHelpler.SetLog(log);
         }

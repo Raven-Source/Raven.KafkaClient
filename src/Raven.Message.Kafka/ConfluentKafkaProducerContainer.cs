@@ -40,13 +40,14 @@ namespace Raven.Message.Kafka
         }
 
 
+        Type[] _flushParmeters = new Type[0];
         internal void ReleaseAllProducers()
         {
             lock (_producerDict)
             {
                 foreach (var producer in _producerDict.Values)
                 {
-                    var method = producer.GetType().GetMethod("Flush");
+                    var method = producer.GetType().GetMethod("Flush", _flushParmeters);
                     method.Invoke(producer, null);
                     var toDispose = producer as IDisposable;
                     toDispose.Dispose();
@@ -93,7 +94,7 @@ namespace Raven.Message.Kafka
 
         private void Producer_OnLog(object sender, LogMessage e)
         {
-            LogHelpler.Info(e.ToString());
+            LogHelpler.Info("{0},{1},{2},{3}", e.Level, e.Facility, e.Name, e.Message);
         }
     }
 }
