@@ -94,7 +94,23 @@ namespace Raven.Message.Kafka
 
         private void Producer_OnLog(object sender, LogMessage e)
         {
-            LogHelpler.Info("{0},{1},{2},{3}", e.Level, e.Facility, e.Name, e.Message);
+            switch (e.Level)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    LogHelpler.Error("{0}|{1}|{2}", e.Name, e.Facility, e.Message);
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                    LogHelpler.Info("{0}|{1}|{2}", e.Name, e.Facility, e.Message);
+                    break;
+                default:
+                    LogHelpler.Debug("{0}|{1}|{2}", e.Name, e.Facility, e.Message);
+                    break;
+            }
         }
     }
 }

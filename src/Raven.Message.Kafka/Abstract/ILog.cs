@@ -9,6 +9,17 @@ namespace Raven.Message.Kafka.Abstract
     /// <summary>
     /// 日志接口
     /// </summary>
+    /// <remarks>
+    /// rdkafka中日志等级   本日志接口方法
+    /// LOG_EMERG   0       Error
+    /// LOG_ALERT   1       Error
+    /// LOG_CRIT    2       Error
+    /// LOG_ERR     3       Error
+    /// LOG_WARNING 4       Info
+    /// LOG_NOTICE  5       Info
+    /// LOG_INFO    6       Info
+    /// LOG_DEBUG   7       Debug
+    /// </remarks>
     public interface ILog
     {
         /// <summary>
