@@ -11,62 +11,46 @@ namespace Raven.Message.Kafka
     /// <summary>
     /// 客户端
     /// </summary>
-    public class Client : IDisposable
+    public class Client
     {
-        static Dictionary<string, Client> _instanceDict = new Dictionary<string, Client>();//客户端对象字典
-        static bool _inited = false;//是否已初始化过
+        static Dictionary<string, Connection> _connections = new Dictionary<string, Connection>();//连接字典
         static bool _released = false;//是否已释放过
         /// <summary>
         /// 获取客户端配置
         /// </summary>
         public static IClientConfig Config { get; private set; }
         /// <summary>
-        /// 初始化，配置工厂默认使用<see cref="Impl.Configuration.App.ConfigFactory"/>
+        /// 加载配置，配置工厂默认使用<see cref="Impl.Configuration.App.ConfigFactory"/>
         /// </summary>
-        public static void Init()
+        public static void LoadConfig()
         {
             Impl.Configuration.App.ConfigFactory factory = new Impl.Configuration.App.ConfigFactory();
-            Init(factory);
+            LoadConfig(factory);
         }
         /// <summary>
-        /// 初始化，使用自定义配置工厂
+        /// 加载配置，使用自定义配置工厂
         /// </summary>
         /// <param name="configFactory">配置工厂</param>
-        public static void Init(IConfigFactory configFactory)
+        public static void LoadConfig(IConfigFactory configFactory)
         {
             if (configFactory == null)
                 throw new ArgumentNullException(nameof(configFactory));
             IClientConfig clientConfig = configFactory.CreateConfig();
-            Init(clientConfig);
+            LoadConfig(clientConfig);
         }
         /// <summary>
-        /// 初始化
+        /// 加载配置
         /// </summary>
         /// <param name="config">客户端配置</param>
-        public static void Init(IClientConfig config)
+        public static void LoadConfig(IClientConfig config)
         {
-            if (_inited)
-                return;
             lock (typeof(Client))
             {
-                if (_inited)
-                    return;
                 if (config == null)
                     throw new ArgumentNullException(nameof(config));
                 Config = config;
-                try
-                {
-                    InitLog(config);
-                    LogHelpler.Info("init config");
-                    InitSerializer(config);
-                    InitClient(config);
-                    _inited = true;
-                }
-                catch (Exception ex)
-                {
-                    LogHelpler.Error(ex);
-                    throw;
-                }
+                var log = InitLog(config);
+                InitConnections(config, log);
             }
         }
         /// <summary>
@@ -80,19 +64,10 @@ namespace Raven.Message.Kafka
             {
                 if (_released)
                     return;
-                LogHelpler.Info("begin release");
-                foreach (var client in _instanceDict.Values)
+                foreach (var connection in _connections.Values)
                 {
-                    try
-                    {
-                        client.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelpler.Error(ex);
-                    }
+                    connection.Dispose();
                 }
-                LogHelpler.Info("release complete");
                 _released = true;
             }
         }
@@ -100,75 +75,53 @@ namespace Raven.Message.Kafka
         /// 初始化日志
         /// </summary>
         /// <param name="config"></param>
-        static void InitLog(IClientConfig config)
+        static ILog InitLog(IClientConfig config)
         {
             if (string.IsNullOrEmpty(config.LogType))
-                return;
+                return null;
             Type logType = Type.GetType(config.LogType);
             Type iLogType = typeof(ILog);
             if (!iLogType.IsAssignableFrom(logType))
                 throw new ArgumentException($"{logType} is not assignable to {iLogType}");
             ILog log = Activator.CreateInstance(logType) as ILog;
-            LogHelpler.SetLog(log);
+            return log;
         }
         /// <summary>
-        /// 初始化序列化参数
+        /// 初始化连接
         /// </summary>
         /// <param name="config"></param>
-        static void InitSerializer(IClientConfig config)
-        {
-            Serialization.SerializerContainer.DefaultSerializerType = config.SerializerType;
-        }
-        /// <summary>
-        /// 初始化客户端实例
-        /// </summary>
-        /// <param name="config"></param>
-        static void InitClient(IClientConfig config)
+        static void InitConnections(IClientConfig config, ILog log)
         {
             if (config.Brokers == null)
                 throw new ArgumentNullException(nameof(config.Brokers));
             foreach (var brokerConfig in config.Brokers)
             {
-                Client client = new Client(brokerConfig);
-                _instanceDict.Add(brokerConfig.Name, client);
+                if (_connections.ContainsKey(brokerConfig.Name))
+                {
+                    //todo log;
+                    try
+                    {
+                        log?.Info("broker config {0} already exist, skip init connection", brokerConfig.Name);
+                    }
+                    catch { }
+                    continue;
+                }
+                Connection connection = new Connection(brokerConfig, log);
+                _connections.Add(brokerConfig.Name, connection);
             }
         }
         /// <summary>
-        /// 获取客户端实例
+        /// 获取连接
         /// </summary>
         /// <param name="brokerName">服务器名</param>
         /// <returns></returns>
-        public static Client GetInstance(string brokerName)
+        public static Connection GetConnection(string brokerName)
         {
             if (string.IsNullOrEmpty(brokerName))
                 return null;
-            if (_instanceDict.ContainsKey(brokerName))
-                return _instanceDict[brokerName];
+            if (_connections.ContainsKey(brokerName))
+                return _connections[brokerName];
             return null;
-        }
-        /// <summary>
-        /// 服务器配置
-        /// </summary>
-        public IBrokerConfig BrokerConfig { get; private set; }
-        /// <summary>
-        /// 获取生产者实例
-        /// </summary>
-        public Producer Producer { get; private set; }
-        /// <summary>
-        /// 关闭客户端，释放资源
-        /// </summary>
-        public void Dispose()
-        {
-            Producer.Dispose();
-        }
-
-        Client(IBrokerConfig brokerConfig)
-        {
-            if (brokerConfig == null)
-                throw new ArgumentNullException(nameof(brokerConfig));
-            LogHelpler.Info("create client for broker {0}, {1}", brokerConfig.Name, brokerConfig.Uri);
-            BrokerConfig = brokerConfig;
-            Producer = new Producer(brokerConfig);
         }
     }
 }

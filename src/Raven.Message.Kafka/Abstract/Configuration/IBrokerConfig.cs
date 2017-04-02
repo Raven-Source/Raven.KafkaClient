@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Raven.Serializer;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,10 @@ namespace Raven.Message.Kafka.Abstract.Configuration
         /// 地址，多个地址用逗号分隔
         /// </summary>
         string Uri { get; }
+        /// <summary>
+        /// 序列化类型
+        /// </summary>
+        SerializerType SerializerType { get; }
         /// <summary>
         /// 主题配置
         /// </summary>

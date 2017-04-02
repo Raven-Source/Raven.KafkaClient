@@ -63,18 +63,5 @@ namespace Raven.Message.Kafka.Impl.Configuration.App
                 this["logType"] = value;
             }
         }
-
-        [ConfigurationProperty("serializerType")]
-        public SerializerType SerializerType
-        {
-            get
-            {
-                return (SerializerType)this["serializerType"];
-            }
-            set
-            {
-                this["serializerType"] = value;
-            }
-        }
     }
 }

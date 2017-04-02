@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Raven.Message.Kafka.Abstract.Configuration;
 using Raven.Message.Kafka.Serialization;
+using Raven.Serializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,24 +17,29 @@ namespace Raven.Message.Kafka
     {
         Producer _producer;
         Dictionary<string, object> _producerDict = new Dictionary<string, object>();
-        const string ProducerKeyFormat = "{0}-@-#-{1}";
+        const string ProducerKeyFormat = "{0}-@-#-{1}-@-#-{2}";
 
         internal ConfluentKafkaProducerContainer(Producer producer)
         {
             _producer = producer;
         }
 
-        internal Producer<Null, T> GetProducer<T>(string topic, ITopicConfig topicConfig)
+        internal Producer<Null, T> GetProducer<T>(string topic, IBrokerConfig brokerConfig, Action<Producer<Null, T>> onProducerCreate)
         {
-            string producerKey = string.Format(ProducerKeyFormat, topic, typeof(T).FullName);
+            return GetProducer<Null, T>(topic, brokerConfig, onProducerCreate);
+        }
+
+        internal Producer<TKey, TValue> GetProducer<TKey, TValue>(string topic, IBrokerConfig brokerConfig, Action<Producer<TKey, TValue>> onProducerCreate)
+        {
+            string producerKey = string.Format(ProducerKeyFormat, topic, typeof(TKey).FullName, typeof(TValue).FullName);
             if (_producerDict.ContainsKey(producerKey))
-                return _producerDict[producerKey] as Producer<Null, T>;
+                return _producerDict[producerKey] as Producer<TKey, TValue>;
             lock (_producerDict)
             {
                 if (_producerDict.ContainsKey(producerKey))
-                    return _producerDict[producerKey] as Producer<Null, T>;
+                    return _producerDict[producerKey] as Producer<TKey, TValue>;
 
-                var producer = CreateProducer<T>(topic, topicConfig);
+                var producer = CreateProducer<TKey, TValue>(topic, brokerConfig, onProducerCreate);
                 _producerDict.Add(producerKey, producer);
                 return producer;
             }
@@ -55,9 +61,10 @@ namespace Raven.Message.Kafka
             }
         }
 
-        Producer<Null, T> CreateProducer<T>(string topic, ITopicConfig topicConfig)
+        Producer<TKey, TValue> CreateProducer<TKey, TValue>(string topic, IBrokerConfig brokerConfig, Action<Producer<TKey, TValue>> onProducerCreate)
         {
             Dictionary<string, object> config = new Dictionary<string, object> { { "bootstrap.servers", _producer.BrokerConfig.Uri } };
+            var topicConfig = brokerConfig?.Topics?.FirstOrDefault(t => t.Name == topic);
             if (topicConfig != null && topicConfig.ProducerConfig != null)
             {
                 var producerConfig = topicConfig.ProducerConfig;
@@ -70,47 +77,14 @@ namespace Raven.Message.Kafka
                 if (!string.IsNullOrEmpty(producerConfig.debug))
                     config.Add("debug", producerConfig.debug);
             }
-            ConfluentKafkaSerializer<T> serializer;
-            if (topicConfig != null && topicConfig.SerializerType != null)
-                serializer = new ConfluentKafkaSerializer<T>(topicConfig.SerializerType.Value);
-            else
-                serializer = new ConfluentKafkaSerializer<T>();
-            Producer<Null, T> producer = new Producer<Null, T>(config, null, serializer);
-            producer.OnLog += Producer_OnLog;
-            producer.OnError += Producer_OnError;
-            producer.OnStatistics += Producer_OnStatistics;
+            SerializerType serializerType = (topicConfig != null && topicConfig.SerializerType != null) ? topicConfig.SerializerType.Value : brokerConfig.SerializerType;
+            ConfluentKafkaSerializer<TValue> serializer = new ConfluentKafkaSerializer<TValue>(serializerType);
+            ConfluentKafkaSerializer<TKey> keySerializer = null;
+            if (typeof(TKey) != typeof(Null))
+                keySerializer = new ConfluentKafkaSerializer<TKey>(serializerType);
+            Producer<TKey, TValue> producer = new Producer<TKey, TValue>(config, keySerializer, serializer);
+            onProducerCreate?.Invoke(producer);
             return producer;
-        }
-
-        private void Producer_OnStatistics(object sender, string e)
-        {
-            LogHelpler.Debug(e);
-        }
-
-        private void Producer_OnError(object sender, Error e)
-        {
-            LogHelpler.Error(e.ToString());
-        }
-
-        private void Producer_OnLog(object sender, LogMessage e)
-        {
-            switch (e.Level)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                    LogHelpler.Error("{0}|{1}|{2}", e.Name, e.Facility, e.Message);
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                    LogHelpler.Info("{0}|{1}|{2}", e.Name, e.Facility, e.Message);
-                    break;
-                default:
-                    LogHelpler.Debug("{0}|{1}|{2}", e.Name, e.Facility, e.Message);
-                    break;
-            }
         }
     }
 }

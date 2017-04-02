@@ -9,14 +9,14 @@ namespace Raven.Message.Kafka
 {
     internal class LogHelpler
     {
-        static ILog _log;
+        ILog _log;
 
-        internal static void SetLog(ILog log)
+        internal LogHelpler(ILog log)
         {
             _log = log;
         }
 
-        internal static void Debug(string format, params object[] pars)
+        internal void Debug(string format, params object[] pars)
         {
             try
             {
@@ -25,7 +25,7 @@ namespace Raven.Message.Kafka
             catch { }
         }
 
-        internal static void Error(Exception ex)
+        internal void Error(Exception ex)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace Raven.Message.Kafka
             catch { }
         }
 
-        internal static void Error(string format, params object[] pars)
+        internal void Error(string format, params object[] pars)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Raven.Message.Kafka
             catch { }
         }
 
-        internal static void Info(string format, params object[] pars)
+        internal void Info(string format, params object[] pars)
         {
             try
             {

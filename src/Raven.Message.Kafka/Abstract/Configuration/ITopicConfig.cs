@@ -17,7 +17,7 @@ namespace Raven.Message.Kafka.Abstract.Configuration
         /// </summary>
         string Name { get; }
         /// <summary>
-        /// 序列化类型，可覆盖<see cref="IClientConfig.SerializerType"/>
+        /// 序列化类型，可覆盖<see cref="IBrokerConfig.SerializerType"/>
         /// </summary>
         SerializerType? SerializerType { get; }
         /// <summary>

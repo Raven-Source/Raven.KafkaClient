@@ -1,4 +1,5 @@
 ﻿using Raven.Message.Kafka.Abstract.Configuration;
+using Raven.Serializer;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -20,6 +21,19 @@ namespace Raven.Message.Kafka.Impl.Configuration.App
             set
             {
                 this["name"] = value;
+            }
+        }
+
+        [ConfigurationProperty("serializerType")]
+        public SerializerType SerializerType
+        {
+            get
+            {
+                return (SerializerType)this["serializerType"];
+            }
+            set
+            {
+                this["serializerType"] = value;
             }
         }
 

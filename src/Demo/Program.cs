@@ -13,17 +13,18 @@ namespace Demo
         {
             try
             {
-                Raven.Message.Kafka.Client.Init();
-                var client = Raven.Message.Kafka.Client.GetInstance("localhost");
+                Raven.Message.Kafka.Client.LoadConfig();
+                var connection = Raven.Message.Kafka.Client.GetConnection("localhost");
                 for (int i = 0; i < 100; i++)
                 {
-                    client.Producer.ProduceAndForget("test222", "hi" + i);
+                    connection.Producer.ProduceAndForget("test222", i, "hi" + i);
                 }
                 Console.WriteLine("send complete");
                 Console.ReadLine();
-                client.Dispose();
+                connection.Dispose();
+                Raven.Message.Kafka.Client.Release();
                 Console.WriteLine("disposed");
-                
+
             }
             catch (Exception ex)
             {

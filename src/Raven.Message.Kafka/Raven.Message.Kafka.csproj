@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="Abstract\Configuration\IConfigFactory.cs" />
     <Compile Include="Abstract\ILog.cs" />
+    <Compile Include="Connection.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="Abstract\Configuration\IBrokerConfig.cs" />
     <Compile Include="Abstract\Configuration\IClientConfig.cs" />

@@ -17,10 +17,6 @@ namespace Raven.Message.Kafka.Abstract.Configuration
         /// </summary>
         string LogType { get; }
         /// <summary>
-        /// 序列化类型
-        /// </summary>
-        SerializerType SerializerType { get; }
-        /// <summary>
         /// 服务器配置
         /// </summary>
         IEnumerable<IBrokerConfig> Brokers { get; }
