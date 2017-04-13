@@ -10,7 +10,7 @@ using System.Configuration;
 
 namespace Raven.Message.Kafka.Impl.Configuration.App
 {
-    class ConfigFactory : IConfigFactory
+    public class ConfigFactory : IConfigFactory
     {
         IClientConfig _config;
         string _sectionName;
