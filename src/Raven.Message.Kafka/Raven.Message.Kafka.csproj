@@ -65,6 +65,10 @@
     <Compile Include="Impl\Configuration\App\ConfigFactory.cs" />
     <Compile Include="Impl\Configuration\App\ProducerConfig.cs" />
     <Compile Include="Impl\Configuration\App\TopicConfig.cs" />
+    <Compile Include="Impl\Configuration\Simple\BrokerConfig.cs" />
+    <Compile Include="Impl\Configuration\Simple\ClientConfig.cs" />
+    <Compile Include="Impl\Configuration\Simple\ProducerConfig.cs" />
+    <Compile Include="Impl\Configuration\Simple\TopicConfig.cs" />
     <Compile Include="LogHelpler.cs" />
     <Compile Include="Producer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
