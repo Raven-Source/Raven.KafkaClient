@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raven.Message.Kafka", "Rave
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "Demo\Demo.csproj", "{87AED77A-A81B-4AEA-A67C-E7BFC4103E83}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PerfTest", "PerfTest", "{BAE5945A-6364-49CA-8014-5BA373B3FB97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerConsole", "PerfTest\ProducerConsole\ProducerConsole.csproj", "{2DAE3F38-9B07-4143-B75E-D817C5C55814}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +25,15 @@ Global
 		{87AED77A-A81B-4AEA-A67C-E7BFC4103E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87AED77A-A81B-4AEA-A67C-E7BFC4103E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87AED77A-A81B-4AEA-A67C-E7BFC4103E83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DAE3F38-9B07-4143-B75E-D817C5C55814}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DAE3F38-9B07-4143-B75E-D817C5C55814}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DAE3F38-9B07-4143-B75E-D817C5C55814}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DAE3F38-9B07-4143-B75E-D817C5C55814}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2DAE3F38-9B07-4143-B75E-D817C5C55814} = {BAE5945A-6364-49CA-8014-5BA373B3FB97}
 	EndGlobalSection
 EndGlobal

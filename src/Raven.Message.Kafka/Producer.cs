@@ -201,7 +201,7 @@ namespace Raven.Message.Kafka
 
         void Producer_OnError(object sender, Error e)
         {
-            Log.Error(e.ToString());
+            Log.Error($"Code:{e.Code},HasError:{e.HasError},IsBrokerError:{e.IsBrokerError},IsLocalError:{e.IsLocalError},Reason:{e.Reason}");
         }
 
         void Producer_OnStatistics(object sender, string e)
