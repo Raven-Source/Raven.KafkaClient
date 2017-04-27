@@ -27,10 +27,17 @@ namespace ProducerConsole
         static int _batchCount = int.Parse(ConfigurationManager.AppSettings["batchCount"]);
         static int _sleepTime = int.Parse(ConfigurationManager.AppSettings["sleepTime"]);
         static string _message = ConfigurationManager.AppSettings["message"];
+        static string _topic = ConfigurationManager.AppSettings["topic"];
+        static object _messageObj = null;
 
         static void Main(string[] args)
         {
             Client.LoadConfig();
+            try
+            {
+                _messageObj = Newtonsoft.Json.JsonConvert.DeserializeObject(_message);
+            }
+            catch { }
             _connection = Client.GetConnection("perftest");
 
             List<Task> _tasks = new List<Task>();
@@ -88,17 +95,26 @@ namespace ProducerConsole
 
         static Task ProduceTest()
         {
-            return _connection.Producer.ProduceAsync("producetest", _message);
+            if (_messageObj == null)
+                return _connection.Producer.ProduceAsync("producetest", _message);
+            else
+                return _connection.Producer.ProduceAsync("producetest", _messageObj);
         }
 
         static void ProduceNoAckTest()
         {
-            _connection.Producer.ProduceAsync("producenoacktest", _message);
+            if (_messageObj == null)
+                _connection.Producer.ProduceAsync(string.IsNullOrEmpty(_topic) ? "producenoacktest" : _topic, _message);
+            else
+                _connection.Producer.ProduceAsync(string.IsNullOrEmpty(_topic) ? "producenoacktest" : _topic, _messageObj);
         }
 
         static void ProduceAndForgetTest()
         {
-            _connection.Producer.ProduceAndForget("produceandforgettest", _message);
+            if (_messageObj == null)
+                _connection.Producer.ProduceAndForget(string.IsNullOrEmpty(_topic) ? "produceandforgettest" : _topic, _message);
+            else
+                _connection.Producer.ProduceAndForget(string.IsNullOrEmpty(_topic) ? "produceandforgettest" : _topic, _messageObj);
         }
 
         static void PrintStats()
