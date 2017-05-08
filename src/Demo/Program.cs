@@ -15,6 +15,7 @@ namespace Demo
             {
                 Raven.Message.Kafka.Client.LoadConfig();
                 var connection = Raven.Message.Kafka.Client.GetConnection("localhost");
+                connection.SetSerializer(null);
                 for (int i = 0; i < 100; i++)
                 {
                     connection.Producer.ProduceAndForget("test222", i, "hi" + i);

@@ -21,6 +21,11 @@ namespace Raven.Message.Kafka.Serialization
             _dataSerializer = SerializerContainer.GetSerializer(serializerType);
         }
 
+        public ConfluentKafkaSerializer(IDataSerializer serializer)
+        {
+            _dataSerializer = serializer;
+        }
+
         public byte[] Serialize(T data)
         {
             return _dataSerializer.Serialize(data);

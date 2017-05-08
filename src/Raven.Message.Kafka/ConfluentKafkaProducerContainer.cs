@@ -24,12 +24,12 @@ namespace Raven.Message.Kafka
             _producer = producer;
         }
 
-        internal Producer<Null, T> GetProducer<T>(string topic, IBrokerConfig brokerConfig, Action<Producer<Null, T>> onProducerCreate)
+        internal Producer<Null, T> GetProducer<T>(string topic, IBrokerConfig brokerConfig, Action<Producer<Null, T>> onProducerCreate, IDataSerializer serializer)
         {
-            return GetProducer<Null, T>(topic, brokerConfig, onProducerCreate);
+            return GetProducer<Null, T>(topic, brokerConfig, onProducerCreate, serializer);
         }
 
-        internal Producer<TKey, TValue> GetProducer<TKey, TValue>(string topic, IBrokerConfig brokerConfig, Action<Producer<TKey, TValue>> onProducerCreate)
+        internal Producer<TKey, TValue> GetProducer<TKey, TValue>(string topic, IBrokerConfig brokerConfig, Action<Producer<TKey, TValue>> onProducerCreate, IDataSerializer serializer)
         {
             string producerKey = string.Format(ProducerKeyFormat, topic, typeof(TKey).FullName, typeof(TValue).FullName);
             if (_producerDict.ContainsKey(producerKey))
@@ -39,7 +39,7 @@ namespace Raven.Message.Kafka
                 if (_producerDict.ContainsKey(producerKey))
                     return _producerDict[producerKey] as Producer<TKey, TValue>;
 
-                var producer = CreateProducer<TKey, TValue>(topic, brokerConfig, onProducerCreate);
+                var producer = CreateProducer<TKey, TValue>(topic, brokerConfig, onProducerCreate, serializer);
                 _producerDict.Add(producerKey, producer);
                 return producer;
             }
@@ -61,7 +61,7 @@ namespace Raven.Message.Kafka
             }
         }
 
-        Producer<TKey, TValue> CreateProducer<TKey, TValue>(string topic, IBrokerConfig brokerConfig, Action<Producer<TKey, TValue>> onProducerCreate)
+        Producer<TKey, TValue> CreateProducer<TKey, TValue>(string topic, IBrokerConfig brokerConfig, Action<Producer<TKey, TValue>> onProducerCreate, IDataSerializer serializer)
         {
             Dictionary<string, object> config = new Dictionary<string, object> { { "bootstrap.servers", _producer.BrokerConfig.Uri } };
             var topicConfig = brokerConfig?.Topics?.FirstOrDefault(t => t.Name == topic);
@@ -78,11 +78,20 @@ namespace Raven.Message.Kafka
                     config.Add("debug", producerConfig.debug);
             }
             SerializerType serializerType = (topicConfig != null && topicConfig.SerializerType != null) ? topicConfig.SerializerType.Value : brokerConfig.SerializerType;
-            ConfluentKafkaSerializer<TValue> serializer = new ConfluentKafkaSerializer<TValue>(serializerType);
-            ConfluentKafkaSerializer<TKey> keySerializer = null;
+            ConfluentKafkaSerializer<TValue> kafkaSerializer = null;
+            if (serializer == null)
+                kafkaSerializer = new ConfluentKafkaSerializer<TValue>(serializerType);
+            else
+                kafkaSerializer = new ConfluentKafkaSerializer<TValue>(serializer);
+            ConfluentKafkaSerializer<TKey> kafkaKeySerializer = null;
             if (typeof(TKey) != typeof(Null))
-                keySerializer = new ConfluentKafkaSerializer<TKey>(serializerType);
-            Producer<TKey, TValue> producer = new Producer<TKey, TValue>(config, keySerializer, serializer);
+            {
+                if (serializer == null)
+                    kafkaKeySerializer = new ConfluentKafkaSerializer<TKey>(serializerType);
+                else
+                    kafkaKeySerializer = new ConfluentKafkaSerializer<TKey>(serializer);
+            }
+            Producer<TKey, TValue> producer = new Producer<TKey, TValue>(config, kafkaKeySerializer, kafkaSerializer);
             onProducerCreate?.Invoke(producer);
             return producer;
         }

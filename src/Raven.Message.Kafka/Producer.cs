@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Raven.Message.Kafka.Abstract;
 using Raven.Message.Kafka.Abstract.Configuration;
+using Raven.Serializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,11 @@ namespace Raven.Message.Kafka
             _producerManager = new ConfluentKafkaProducerContainer(this);
         }
         /// <summary>
+        /// 序列化器，优先使用此序列化器
+        /// </summary>
+        public IDataSerializer Serializer { get; set; }
+
+        /// <summary>
         /// 生产消息
         /// </summary>
         /// <typeparam name="T">消息类型</typeparam>
@@ -48,7 +54,7 @@ namespace Raven.Message.Kafka
             {
                 if (_disposeCalled)
                     throw new InvalidOperationException(BuildIdentityString("producer is disposed"));
-                var producer = _producerManager.GetProducer<T>(topic, BrokerConfig, OnProducerCreate);
+                var producer = _producerManager.GetProducer<T>(topic, BrokerConfig, OnProducerCreate, Serializer);
                 return producer.ProduceAsync(topic, null, message);
             }
             catch (Exception ex)
@@ -72,7 +78,7 @@ namespace Raven.Message.Kafka
             {
                 if (_disposeCalled)
                     throw new InvalidOperationException(BuildIdentityString("producer is disposed"));
-                var producer = _producerManager.GetProducer<TKey, TMessage>(topic, BrokerConfig, OnProducerCreate);
+                var producer = _producerManager.GetProducer<TKey, TMessage>(topic, BrokerConfig, OnProducerCreate, Serializer);
                 return producer.ProduceAsync(topic, key, message);
             }
             catch (Exception ex)
@@ -96,7 +102,7 @@ namespace Raven.Message.Kafka
             {
                 if (_disposeCalled)
                     throw new InvalidOperationException(BuildIdentityString("producer is disposed"));
-                var producer = _producerManager.GetProducer<T>(topic, BrokerConfig, OnProducerCreate);
+                var producer = _producerManager.GetProducer<T>(topic, BrokerConfig, OnProducerCreate, Serializer);
                 var handler = DeliverHandler<T>.Instance;
                 if (handler.Log == null)
                     handler.Log = Log;
@@ -125,7 +131,7 @@ namespace Raven.Message.Kafka
             {
                 if (_disposeCalled)
                     throw new InvalidOperationException(BuildIdentityString("producer is disposed"));
-                var producer = _producerManager.GetProducer<TKey, TMessage>(topic, BrokerConfig, OnProducerCreate);
+                var producer = _producerManager.GetProducer<TKey, TMessage>(topic, BrokerConfig, OnProducerCreate, Serializer);
                 var handler = DeliverHandler<TKey, TMessage>.Instance;
                 if (handler.Log == null)
                     handler.Log = Log;

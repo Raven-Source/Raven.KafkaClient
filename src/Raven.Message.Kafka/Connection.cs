@@ -25,6 +25,14 @@ namespace Raven.Message.Kafka
         /// 日志
         /// </summary>
         internal LogHelpler Log { get; set; }
+        /// <summary>
+        /// 设置序列化器
+        /// </summary>
+        /// <param name="serializer"></param>
+        public void SetSerializer(Serializer.IDataSerializer serializer)
+        {
+            Producer.Serializer = serializer;
+        }
 
         public void Dispose()
         {
